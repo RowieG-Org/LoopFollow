@@ -25,6 +25,10 @@ struct SettingsMenuView: View {
                                   value: SettingsRoute.infoDisplay)
                 }
 
+                NavigationRow(title: "Units and Metrics",
+                              icon: "scalemass",
+                              value: SettingsRoute.units)
+
                 NavigationRow(title: "Tabs",
                               icon: "rectangle.3.group",
                               value: SettingsRoute.tabSettings)
@@ -87,16 +91,6 @@ struct SettingsMenuView: View {
     @ViewBuilder
     private var dataSection: some View {
         Section("Data Settings") {
-            Picker("Units",
-                   selection: Binding(
-                       get: { Storage.shared.units.value },
-                       set: { Storage.shared.units.value = $0 }
-                   )) {
-                Text("mg/dL").tag("mg/dL")
-                Text("mmol/L").tag("mmol/L")
-            }
-            .pickerStyle(.segmented)
-
             NavigationRow(title: "Nightscout",
                           icon: "network",
                           value: SettingsRoute.nightscout)
@@ -112,6 +106,7 @@ struct SettingsMenuView: View {
 
 enum SettingsRoute: Hashable, Identifiable {
     case settings
+    case units
     case nightscout, dexcom
     case backgroundRefresh
     case general, graph
@@ -134,6 +129,7 @@ enum SettingsRoute: Hashable, Identifiable {
     var destination: some View {
         switch self {
         case .settings: SettingsMenuView()
+        case .units: UnitsSettingsView()
         case .nightscout: NightscoutSettingsView(viewModel: .init())
         case .dexcom: DexcomSettingsView(viewModel: .init())
         case .backgroundRefresh: BackgroundRefreshSettingsView(viewModel: .init())

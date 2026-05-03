@@ -5,19 +5,35 @@ import SwiftUI
 
 struct NightscoutSettingsView: View {
     @ObservedObject var viewModel: NightscoutSettingsViewModel
+    var usesModalCloseButton: Bool = false
+    var onContinueToUnits: (() -> Void)? = nil
+    var onImportSettings: (() -> Void)? = nil
+    @State private var showUnitsSetup = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         Form {
             urlSection
             tokenSection
             statusSection
+
+            if viewModel.isFreshSetup {
+                continueSection
+            }
+
             importSection
         }
         .onDisappear {
             viewModel.dismiss()
         }
-        .preferredColorScheme(Storage.shared.appearanceMode.value.colorScheme)
+        .navigationDestination(isPresented: $showUnitsSetup) {
+            UnitsOnboardingView {
+                dismiss()
+            }
+        }
         .navigationBarTitle("Nightscout Settings", displayMode: .inline)
+        .navigationBarBackButtonHidden(usesModalCloseButton)
+        .preferredColorScheme(Storage.shared.appearanceMode.value.colorScheme)
     }
 
     // MARK: - Subviews / Computed Properties
@@ -50,17 +66,57 @@ struct NightscoutSettingsView: View {
 
     private var statusSection: some View {
         Section(header: Text("Status")) {
-            Text(viewModel.nightscoutStatus)
+            HStack {
+                Text(viewModel.nightscoutStatus)
+                if viewModel.isConnected {
+                    Spacer()
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                }
+            }
+        }
+    }
+
+    private var continueSection: some View {
+        Section {
+            Button(action: {
+                if let onContinueToUnits {
+                    onContinueToUnits()
+                } else {
+                    showUnitsSetup = true
+                }
+            }) {
+                HStack {
+                    Spacer()
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!viewModel.isConnected)
+            .listRowBackground(Color.clear)
         }
     }
 
     private var importSection: some View {
         Section(header: Text("Import Settings")) {
-            NavigationLink(destination: ImportExportSettingsView()) {
-                HStack {
-                    Image(systemName: "square.and.arrow.down")
-                        .foregroundColor(.blue)
-                    Text("Import Settings from QR Code")
+            if let onImportSettings {
+                Button(action: onImportSettings) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.down")
+                            .foregroundColor(.blue)
+                        Text("Import Settings from QR Code")
+                            .foregroundColor(.primary)
+                    }
+                }
+            } else {
+                NavigationLink(destination: ImportExportSettingsView()) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.down")
+                            .foregroundColor(.blue)
+                        Text("Import Settings from QR Code")
+                    }
                 }
             }
         }

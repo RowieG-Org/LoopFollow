@@ -5,6 +5,10 @@ import SwiftUI
 
 struct DexcomSettingsView: View {
     @ObservedObject var viewModel: DexcomSettingsViewModel
+    var usesModalCloseButton: Bool = false
+    var onContinueToUnits: (() -> Void)? = nil
+    @State private var showUnitsSetup = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         Form {
@@ -33,10 +37,38 @@ struct DexcomSettingsView: View {
                 .pickerStyle(SegmentedPickerStyle())
             }
 
+            if viewModel.isFreshSetup {
+                Section {
+                    Button(action: {
+                        if let onContinueToUnits {
+                            onContinueToUnits()
+                        } else {
+                            showUnitsSetup = true
+                        }
+                    }) {
+                        HStack {
+                            Spacer()
+                            Text("Continue")
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!viewModel.hasCredentials)
+                    .listRowBackground(Color.clear)
+                }
+            }
+
             importSection
+        }
+        .navigationDestination(isPresented: $showUnitsSetup) {
+            UnitsOnboardingView {
+                dismiss()
+            }
         }
         .preferredColorScheme(Storage.shared.appearanceMode.value.colorScheme)
         .navigationBarTitle("Dexcom Settings", displayMode: .inline)
+        .navigationBarBackButtonHidden(usesModalCloseButton)
     }
 
     private var importSection: some View {
