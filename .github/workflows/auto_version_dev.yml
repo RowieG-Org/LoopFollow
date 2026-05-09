@@ -35,7 +35,7 @@ on:
 
 jobs:
   bump-version:
-    if: github.repository_owner == 'loopandlearn'
+    if: ${{ !github.event.repository.fork }}
     runs-on: ubuntu-latest
 
     steps:
