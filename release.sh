@@ -117,20 +117,12 @@ git diff -M --binary "$MAIN_BRANCH" "$RELEASE_BRANCH"  \
   > "$PATCH_FILE"
 
 cd ..
-if [ -n "${SKIP_SISTER_REPOS:-}" ]; then
-  echo "⏭️  Skipping sister repo updates (SKIP_SISTER_REPOS is set)"
-else
-  update_follower "$SECOND_DIR"
-  update_follower "$THIRD_DIR"
-fi
+update_follower "$SECOND_DIR"
+update_follower "$THIRD_DIR"
 
 # ---------- GitHub Actions Test ---------
-echo;
-if [ -n "${SKIP_SISTER_REPOS:-}" ]; then
-  echo "💻  Test GitHub Build Actions for the primary repository and then continue.";
-else
-  echo "💻  Test GitHub Build Actions for all three repositories and then continue.";
-fi
+echo; 
+echo "💻  Test GitHub Build Actions for all three repositories and then continue."; 
 pause
 
 # --- return to primary path
